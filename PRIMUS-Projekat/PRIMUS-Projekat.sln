@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36414.22 d17.14
+VisualStudioVersion = 17.14.36414.22
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PRIMUS-Projekat", "PRIMUS-Projekat\PRIMUS-Projekat.csproj", "{38BF4F70-B7FE-445B-A5A9-2E6A4D6C0744}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerWindow", "PRIMUS-Projekat\ServerWindow.csproj", "{38BF4F70-B7FE-445B-A5A9-2E6A4D6C0744}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientWindow", "Server\ClientWindow.csproj", "{1EFD38BF-1BE5-4DF2-BAC7-F4BA8C94D56D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{38BF4F70-B7FE-445B-A5A9-2E6A4D6C0744}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38BF4F70-B7FE-445B-A5A9-2E6A4D6C0744}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38BF4F70-B7FE-445B-A5A9-2E6A4D6C0744}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1EFD38BF-1BE5-4DF2-BAC7-F4BA8C94D56D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EFD38BF-1BE5-4DF2-BAC7-F4BA8C94D56D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EFD38BF-1BE5-4DF2-BAC7-F4BA8C94D56D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1EFD38BF-1BE5-4DF2-BAC7-F4BA8C94D56D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
