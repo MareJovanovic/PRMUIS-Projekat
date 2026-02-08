@@ -54,10 +54,18 @@ namespace Server
             string poruka = MsgSend.Text.Trim();
             if (!string.IsNullOrEmpty(poruka) && client.Connected)
             {
-                byte[] data = Encoding.UTF8.GetBytes(poruka);
-                await stream.WriteAsync(data, 0, data.Length);
+                if (poruka.StartsWith("Proveri", StringComparison.OrdinalIgnoreCase))
+                {
+                    string kriterijum = poruka.Substring(7).Trim();
+                    await SendUdpQuery(kriterijum);
+                }
+                else
+                {
+                    byte[] data = Encoding.UTF8.GetBytes(poruka);
+                    await stream.WriteAsync(data, 0, data.Length);
 
-                ServerMsg.AppendText($"[Ja]: {poruka}\r\n");
+                    ServerMsg.AppendText($"[Ja]: {poruka}\r\n");
+                }
                 MsgSend.Clear();
             }
         }
@@ -91,6 +99,55 @@ namespace Server
                 Host.IsEnabled = true;
             });
             client.Close();
+        }
+
+        private async Task SendUdpQuery(string trazeniNaslov)
+        {
+            using (UdpClient client = new UdpClient())
+            {
+                try
+                {
+                    string upit = "Proveri" + trazeniNaslov;
+                    byte[] data = Encoding.UTF8.GetBytes(upit);
+
+                    string serverIp = IpAddr.Text.Trim();
+                    int serverPort = int.Parse(BrojPorta.Text.Trim());
+
+                    await client.SendAsync(data, data.Length, serverIp, serverPort);
+
+                    var result = await client.ReceiveAsync();
+                    string odgovor = Encoding.UTF8.GetString(result.Buffer);
+
+                    // Parse odgovora i update ListBox
+                    string[] knjige = odgovor.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
+
+                    ListaKnjigaPrikaz.Dispatcher.Invoke(() =>
+                    {
+                        ListaKnjigaPrikaz.Items.Clear();
+
+                        if (knjige.Length > 0 && !knjige[0].Contains("Nema dostupnih knjiga"))
+                        {
+                            foreach (var knjiga in knjige)
+                                ListaKnjigaPrikaz.Items.Add(knjiga);
+                            
+
+                            ListaKnjigaPrikaz.Visibility = Visibility.Visible;
+                        }
+                        else
+                        {
+                            ListaKnjigaPrikaz.Visibility = Visibility.Hidden;
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    ServerMsg.Dispatcher.Invoke(() =>
+                    {
+                        ServerMsg.AppendText($"Greška: {ex.Message}\r\n");
+                    });
+                }
+            }
+
         }
     }
 }

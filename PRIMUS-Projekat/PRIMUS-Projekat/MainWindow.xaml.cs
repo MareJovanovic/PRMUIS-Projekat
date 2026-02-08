@@ -57,6 +57,7 @@ namespace PRIMUS_Projekat
                 // UDP – INFO utičnica
                 udpClient = new UdpClient(udpPort);
                 IPEndPoint udpEndPoint = (IPEndPoint)udpClient.Client.LocalEndPoint;
+                ReceiveUdpAsync();
 
                 // Prava lokalna IP adresa
                 string localIp = Dns.GetHostEntry(Dns.GetHostName())
@@ -197,6 +198,35 @@ namespace PRIMUS_Projekat
                 ServerMsg.AppendText("Klijent diskonektovan.\r\n");
             });
             client.Close();
+        }
+        private async void ReceiveUdpAsync()
+        {
+            while (true)
+            {
+                var result = await udpClient.ReceiveAsync();
+                string poruka = Encoding.UTF8.GetString(result.Buffer);
+
+                // Očekujemo: PROVERI:nekiTekst
+                if (poruka.StartsWith("Proveri", StringComparison.OrdinalIgnoreCase))
+                {
+                    string trazeno = poruka.Substring(7).Trim();
+
+                    var dostupne = knjige
+                        .Where(k =>
+                            k.Kolicina > 0 &&
+                            (k.Naslov.Contains(trazeno, StringComparison.OrdinalIgnoreCase) ||
+                             k.Autor.Contains(trazeno, StringComparison.OrdinalIgnoreCase)))
+                        .Select(k => $"{k.Naslov} - {k.Autor}")
+                        .ToList();
+
+                    string odgovor = dostupne.Count > 0
+                        ? string.Join("\n", dostupne)
+                        : "NEMA";
+
+                    byte[] data = Encoding.UTF8.GetBytes(odgovor);
+                    await udpClient.SendAsync(data, data.Length, result.RemoteEndPoint);
+                }
+            }
         }
     }
 }

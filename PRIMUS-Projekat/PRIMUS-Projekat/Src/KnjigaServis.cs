@@ -13,9 +13,9 @@ namespace PRIMUS_Projekat.Src
         
         public KnjigaServis()
         {
-            knjige.Add(new Knjiga("Na Drini ćuprija", "Ivo Andrić", 10));
-            knjige.Add(new Knjiga("Zov daljine", "Ljubica Arsić", 20));
-            knjige.Add(new Knjiga("Lovac u žitu", "Džerom Dejvid Selindžer", 5));
+            knjige.Add(new Knjiga("Na Drini cuprija", "Ivo Andric", 10));
+            knjige.Add(new Knjiga("Zov Daljine", "Ljubica Arsic", 0));
+            knjige.Add(new Knjiga("Lovac u zitu", "Dzerom Dejvid Selindzer", 5));
         }
 
         public List<Knjiga> getKnjige()
