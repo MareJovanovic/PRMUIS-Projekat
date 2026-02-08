@@ -182,8 +182,8 @@ namespace PRIMUS_Projekat
                     });
 
                     // Echo nazad klijentu
-                    byte[] response = Encoding.UTF8.GetBytes($"[Server]: {message}");
-                    await stream.WriteAsync(response, 0, response.Length);
+                    //byte[] response = Encoding.UTF8.GetBytes($"[Server]: {message}");
+                   // await stream.WriteAsync(response, 0, response.Length);
                 }
                 catch
                 {
