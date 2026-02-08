@@ -32,6 +32,7 @@
             <TextBox Name="IpAddr" Margin="0 5 200 0" Grid.Column="4" Grid.Row="2" Grid.ColumnSpan="1" Background="White" IsReadOnly="False" Visibility="Visible"/>
             <Label Grid.Column="3" Grid.Row="3" Content="Port: " Margin="45 0 0 0"/>
             <TextBox Name="BrojPorta" Grid.Row="3" Grid.Column="4" Margin=" 0 5 200 0"/>
+            <ListBox Name="ListaKnjigaPrikaz" Grid.Column="3" Grid.ColumnSpan="2" Grid.Row="4" Grid.RowSpan="2" Margin="0 10 99 0" Visibility="Hidden"/>
         </Grid>
     </Grid>
 </Window>
