@@ -5,25 +5,33 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
-        Title="Klijent" Height="450" Width="800">
+        Title="Klijent" Height="450" Width="850">
     <Grid Background="Wheat">
         <Grid Background="Wheat" Margin="20 20 20 20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="3*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="10*"/>
                 <RowDefinition Height="2*"/>
             </Grid.RowDefinitions>
             <Label Content="Razgovor sa bibliotekom" Margin="0 -6 0 0" FontSize="15" Grid.Column="0" Grid.Row="0"/>
-            <Button Name="Send" Content="Pošalji" Margin="180 0 0 10" Background="White"/>
-            <Button Name="Host" Content="Poveži se sa serverom" Grid.Column="1" Grid.Row="1" Margin="100 -10 100 10" Background="White"/>
-            <TextBox Name="MsgSend" Margin="0 7 0 0" Grid.Column="0" Grid.Row="1" Grid.RowSpan="1" Background="White"/>
-            <TextBox Name="ServerMsg" Margin="0 10 0 0" Grid.Column="0" Grid.Row="2" Grid.RowSpan="3" Background="White" IsReadOnly="True"/>
-            <TextBox Name="BookLIst" Margin="20 40 0 0" Grid.Column="1" Grid.Row="1" Grid.RowSpan="3" Background="White" IsReadOnly="True" Visibility="Hidden"/>
+            <Button Name="Send" Content="Pošalji" Grid.ColumnSpan="3" Margin="180,0,101,0" Background="White" Height="20" VerticalAlignment="Top" Click="Send_Click"/>
+            <Button Name="Host" Content="Poveži se sa serverom" Grid.Column="2" Grid.ColumnSpan="3" Grid.Row="1" Margin="100 -10 100 10" Background="White" Click="Host_Click"/>
+            <TextBox Name="MsgSend" Margin="0 7 0 0" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Grid.RowSpan="1" Background="White"/>
+            <TextBox Name="ServerMsg" Margin="0 10 0 0" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Grid.RowSpan="4" Background="White" IsReadOnly="True"/>
+            <Label Grid.Column="3" Grid.Row="2" Margin="20 0 10 0" Content="Ip Servera:" FontSize="12"/>
+            <TextBox Name="IpAddr" Margin="0 5 200 0" Grid.Column="4" Grid.Row="2" Grid.ColumnSpan="1" Background="White" IsReadOnly="False" Visibility="Visible"/>
+            <Label Grid.Column="3" Grid.Row="3" Content="Port: " Margin="45 0 0 0"/>
+            <TextBox Name="BrojPorta" Grid.Row="3" Grid.Column="4" Margin=" 0 5 200 0"/>
         </Grid>
     </Grid>
 </Window>

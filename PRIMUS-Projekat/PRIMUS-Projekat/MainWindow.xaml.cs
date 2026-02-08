@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -24,6 +25,8 @@ namespace PRIMUS_Projekat
         private KnjigaServis knjigaServis;
         new ObservableCollection<Knjiga> knjige;
 
+        private List<TcpClient> connectedClients = new List<TcpClient>();
+
         TcpListener tcpListener;
         UdpClient udpClient;
 
@@ -32,8 +35,6 @@ namespace PRIMUS_Projekat
         public MainWindow()
         {
             InitializeComponent();
-
-
 
             //dodavanje knjige i prikazivanje
             knjigaServis = new KnjigaServis();
@@ -51,6 +52,7 @@ namespace PRIMUS_Projekat
                 tcpListener = new TcpListener(IPAddress.Any, tcpPort);
                 tcpListener.Start();
                 IPEndPoint tcpEndPoint = (IPEndPoint)tcpListener.LocalEndpoint;
+                AcceptClientsAsync();
 
                 // UDP – INFO utičnica
                 udpClient = new UdpClient(udpPort);
@@ -124,18 +126,77 @@ namespace PRIMUS_Projekat
         {
             StartServer();
         }
+        
 
-        private void Send_Click(object sender, RoutedEventArgs e)
+        private async void Send_Click(object sender, RoutedEventArgs e)
         {
             string poruka = MsgSend.Text.Trim();
-            if (!string.IsNullOrEmpty(poruka))
-            {
-                // Dodavanje poruke u glavni log
-                ServerMsg.AppendText($"[Server]: {poruka}\r\n");
+            if (string.IsNullOrEmpty(poruka)) return;
 
-                // Čišćenje TextBox-a za unos
-                MsgSend.Clear();
+            ServerMsg.AppendText($"[Server]: {poruka}\r\n");
+            MsgSend.Clear();
+
+            byte[] data = Encoding.UTF8.GetBytes(poruka);
+            foreach (var client in connectedClients.ToArray())
+            {
+                if (client.Connected)
+                {
+                    try
+                    {
+                        await client.GetStream().WriteAsync(data, 0, data.Length);
+                    }
+                    catch
+                    {
+                        connectedClients.Remove(client);
+                    }
+                }
             }
+        }
+        
+        private async void AcceptClientsAsync()
+        {
+            while (true)
+            {
+                TcpClient client = await tcpListener.AcceptTcpClientAsync();
+                connectedClients.Add(client);
+                ServerMsg.AppendText("Novi klijent povezan!\r\n");
+                HandleClientAsync(client);
+            }
+        }
+        private async void HandleClientAsync(TcpClient client)
+        {
+            NetworkStream stream = client.GetStream();
+            byte[] buffer = new byte[1024];
+
+            while (client.Connected)
+            {
+                try
+                {
+                    int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+                    if (bytesRead == 0) break;
+
+                    string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    ServerMsg.Dispatcher.Invoke(() =>
+                    {
+                        ServerMsg.AppendText($"[Klijent]: {message}\r\n");
+                    });
+
+                    // Echo nazad klijentu
+                    byte[] response = Encoding.UTF8.GetBytes($"[Server]: {message}");
+                    await stream.WriteAsync(response, 0, response.Length);
+                }
+                catch
+                {
+                    break;
+                }
+            }
+
+            connectedClients.Remove(client);
+            ServerMsg.Dispatcher.Invoke(() =>
+            {
+                ServerMsg.AppendText("Klijent diskonektovan.\r\n");
+            });
+            client.Close();
         }
     }
 }
