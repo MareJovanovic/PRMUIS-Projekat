@@ -1,6 +1,8 @@
 ﻿using PRIMUS_Projekat.Src;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,10 +24,18 @@ namespace PRIMUS_Projekat
         private KnjigaServis knjigaServis;
         new ObservableCollection<Knjiga> knjige;
 
+        TcpListener tcpListener;
+        UdpClient udpClient;
+
+        int tcpPort = 5000;
+        int udpPort = 5001;
         public MainWindow()
         {
             InitializeComponent();
 
+
+
+            //dodavanje knjige i prikazivanje
             knjigaServis = new KnjigaServis();
             knjige = new ObservableCollection<Knjiga>(knjigaServis.getKnjige());
 
@@ -33,6 +43,40 @@ namespace PRIMUS_Projekat
             BookLIst.ItemsSource = knjige;
         }
        
+        public void StartServer()
+        {
+            try
+            {
+                // TCP – PRISTUPNA utičnica
+                tcpListener = new TcpListener(IPAddress.Any, tcpPort);
+                tcpListener.Start();
+                IPEndPoint tcpEndPoint = (IPEndPoint)tcpListener.LocalEndpoint;
+
+                // UDP – INFO utičnica
+                udpClient = new UdpClient(udpPort);
+                IPEndPoint udpEndPoint = (IPEndPoint)udpClient.Client.LocalEndPoint;
+
+                // Prava lokalna IP adresa
+                string localIp = Dns.GetHostEntry(Dns.GetHostName())
+                    .AddressList
+                    .First(ip => ip.AddressFamily == AddressFamily.InterNetwork)
+                    .ToString();
+
+                // Prikaz u TextBlock
+                ServerMsg.Text = $"PRISTUPNA utičnica (TCP): {localIp} : {tcpEndPoint.Port}";
+                ServerMsg.Text = $"INFO utičnica (UDP): {localIp} : {udpEndPoint.Port}";
+
+                // Log u TextBox
+                ServerMsg.AppendText("\nServer upaljen!\r\n");
+                ServerMsg.AppendText($"TCP port: {tcpEndPoint.Port}, UDP port: {udpEndPoint.Port}\r\n");
+            }
+            catch(Exception ex)
+            {
+                ServerMsg.AppendText($"Greška: {ex.Message}\r\n");
+            }
+            HostSRV.IsEnabled = false;
+        }
+
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
@@ -73,6 +117,24 @@ namespace PRIMUS_Projekat
             else
             {
                 MessageBox.Show("Neuspesno brisanje");
+            }
+        }
+
+        private void HostSRV_Click(object sender, RoutedEventArgs e)
+        {
+            StartServer();
+        }
+
+        private void Send_Click(object sender, RoutedEventArgs e)
+        {
+            string poruka = MsgSend.Text.Trim();
+            if (!string.IsNullOrEmpty(poruka))
+            {
+                // Dodavanje poruke u glavni log
+                ServerMsg.AppendText($"[Server]: {poruka}\r\n");
+
+                // Čišćenje TextBox-a za unos
+                MsgSend.Clear();
             }
         }
     }
