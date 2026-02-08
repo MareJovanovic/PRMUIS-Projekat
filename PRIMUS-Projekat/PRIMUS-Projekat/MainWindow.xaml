@@ -21,8 +21,8 @@
                         <RowDefinition Height="2*"/>
                     </Grid.RowDefinitions>
                     <Label Content="Razgovor sa klijentima" Margin="0 -5 0 0" FontSize="15" Grid.Column="0" Grid.Row="0"/>
-                    <Button Name="Send" Content="Pošalji" Margin="180 0 0 0" Background="White"/>
-                    <Button Name="Host" Content="Pokreni server" Grid.Column="1" Grid.Row="1" Margin="100 -10 100 10" Background="White"/>
+                    <Button Name="Send" Content="Pošalji" Margin="180 0 0 0" Background="White" Click="Send_Click"/>
+                    <Button Name="HostSRV" Content="Pokreni server" Grid.Column="1" Grid.Row="1" Margin="100 -10 100 10" Background="White" Click="HostSRV_Click"/>
                     <TextBox Name="MsgSend" Margin="0 7 0 0" Grid.Column="0" Grid.Row="1" Grid.RowSpan="1" Background="White"/>
                     <TextBox Name="ServerMsg" Margin="0 10 0 0" Grid.Column="0" Grid.Row="2" Grid.RowSpan="3" Background="White" IsReadOnly="True"/>
                     <DataGrid Name="BookLIst" AutoGenerateColumns="False" Margin="20 40 0 0" Grid.Column="1" Grid.Row="1" Grid.RowSpan="3" Background="White" IsReadOnly="True">
