@@ -14,6 +14,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.IO;
+using System.Text.Json;
+using System.Linq;
+
 
 namespace PRIMUS_Projekat
 {
@@ -31,6 +35,9 @@ namespace PRIMUS_Projekat
 
         TcpListener tcpListener;
         UdpClient udpClient;
+        string knjigeFajl = "knjige.json";
+        string iznajmljivanjaFajl = "iznajmljivanja.json";
+
 
         int tcpPort = 5000;
         int udpPort = 5001;
@@ -48,6 +55,24 @@ namespace PRIMUS_Projekat
        
         public void StartServer()
         {
+
+            UcitajStanje();
+
+
+            foreach (var i in iznajmljivanja)
+            {
+                if (i.DatumVracanja < DateTime.Now)
+                {
+                    int kasni = (DateTime.Now - i.DatumVracanja).Days;
+
+                    Dispatcher.Invoke(() =>
+                    {
+                        ServerMsg.AppendText(
+                            $"KASNI: {i.Naslov} - {i.Autor}, clan {i.ClanId}, kasni {kasni} dana\n");
+                    });
+                }
+            }
+
             try
             {
                 // TCP – PRISTUPNA utičnica
@@ -212,6 +237,9 @@ namespace PRIMUS_Projekat
                                     new Iznajmljivanje(naslov, autor, clanId, broj)
                                 );
 
+                                SacuvajStanje();
+
+
                                 byte[] ok = Encoding.UTF8.GetBytes("IZNAJMLJENO");
                                 await stream.WriteAsync(ok, 0, ok.Length);
                             }
@@ -264,6 +292,8 @@ namespace PRIMUS_Projekat
                                     PrikazKnjiga.Items.Refresh();
                                     BookLIst.Items.Refresh();
                                 });
+
+                                SacuvajStanje();
 
                                 // ako vise nema iznajmljenih primeraka – brisemo evidenciju
                                 if (izn.BrojPrimeraka <= 0)
@@ -336,5 +366,39 @@ namespace PRIMUS_Projekat
                 }
             }
         }
+
+        void SacuvajStanje()
+        {
+            File.WriteAllText(knjigeFajl,
+                JsonSerializer.Serialize(knjige.ToList()));
+
+            File.WriteAllText(iznajmljivanjaFajl,
+                JsonSerializer.Serialize(iznajmljivanja));
+        }
+
+        void UcitajStanje()
+        {
+            if (File.Exists(knjigeFajl))
+            {
+                var ucitaneKnjige =
+                    JsonSerializer.Deserialize<List<Knjiga>>(
+                        File.ReadAllText(knjigeFajl));
+
+                knjige.Clear();
+                foreach (var k in ucitaneKnjige)
+                    knjige.Add(k);
+            }
+
+            if (File.Exists(iznajmljivanjaFajl))
+            {
+                iznajmljivanja =
+                    JsonSerializer.Deserialize<List<Iznajmljivanje>>(
+                        File.ReadAllText(iznajmljivanjaFajl))
+                    ?? new List<Iznajmljivanje>();
+            }
+        }
+
     }
+
+
 }
