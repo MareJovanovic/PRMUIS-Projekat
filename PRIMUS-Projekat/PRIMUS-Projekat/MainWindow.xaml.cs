@@ -26,6 +26,8 @@ namespace PRIMUS_Projekat
         new ObservableCollection<Knjiga> knjige;
 
         private List<TcpClient> connectedClients = new List<TcpClient>();
+        private List<Iznajmljivanje> iznajmljivanja = new List<Iznajmljivanje>();
+
 
         TcpListener tcpListener;
         UdpClient udpClient;
@@ -182,9 +184,53 @@ namespace PRIMUS_Projekat
                         ServerMsg.AppendText($"[Klijent]: {message}\r\n");
                     });
 
+                    string[] delovi = message.Split('-');
+
+                    if (delovi[0] == "IZNAJMI")
+                    {
+                        try
+                        {
+                            string naslov = delovi[1];
+                            string autor = delovi[2];
+                            int broj = int.Parse(delovi[3]);
+                            int clanId = int.Parse(delovi[4]);
+
+                            var knjiga = knjige.FirstOrDefault(k =>
+                                k.Naslov == naslov && k.Autor == autor);
+
+                            if (knjiga != null && knjiga.Kolicina >= broj)
+                            {
+                                knjiga.Kolicina -= broj;
+
+                                Dispatcher.Invoke(() =>
+                                {
+                                    PrikazKnjiga.Items.Refresh();
+                                    BookLIst.Items.Refresh();
+                                });
+
+                                iznajmljivanja.Add(
+                                    new Iznajmljivanje(naslov, autor, clanId, broj)
+                                );
+
+                                byte[] ok = Encoding.UTF8.GetBytes("IZNAJMLJENO");
+                                await stream.WriteAsync(ok, 0, ok.Length);
+                            }
+                            else
+                            {
+                                byte[] err = Encoding.UTF8.GetBytes("NEMA_DOVOLJNO");
+                                await stream.WriteAsync(err, 0, err.Length);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            byte[] err = Encoding.UTF8.GetBytes("GRESKA_Z4");
+                            await stream.WriteAsync(err, 0, err.Length);
+                        }
+                    }
+
                     // Echo nazad klijentu
                     //byte[] response = Encoding.UTF8.GetBytes($"[Server]: {message}");
-                   // await stream.WriteAsync(response, 0, response.Length);
+                    // await stream.WriteAsync(response, 0, response.Length);
                 }
                 catch
                 {
@@ -198,6 +244,8 @@ namespace PRIMUS_Projekat
                 ServerMsg.AppendText("Klijent diskonektovan.\r\n");
             });
             client.Close();
+
+
         }
         private async void ReceiveUdpAsync()
         {
