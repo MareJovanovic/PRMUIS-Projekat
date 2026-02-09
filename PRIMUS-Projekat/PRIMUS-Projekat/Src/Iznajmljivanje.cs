@@ -8,6 +8,9 @@
         public DateTime DatumVracanja { get; set; }
         public int BrojPrimeraka { get; set; }
 
+        
+
+
         public Iznajmljivanje(string naslov, string autor, int clanId, int broj)
         {
             Naslov = naslov;
@@ -16,5 +19,6 @@
             BrojPrimeraka = broj;
             DatumVracanja = DateTime.Now.AddDays(14);
         }
+
     }
 }

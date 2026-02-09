@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using ClientWindow;
+using System.Net.Sockets;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,7 +20,10 @@ namespace Server
     {
         TcpClient client;
         NetworkStream stream;
-
+        private List<MojeIznajmljivanje> mojaIznajmljivanja = new();
+        string poslednjiNaslov;
+        string poslednjiAutor;
+        int poslednjiBroj;
         public MainWindow()
         {
             InitializeComponent();
@@ -52,6 +56,14 @@ namespace Server
         private async void Send_Click(object sender, RoutedEventArgs e)
         {
             string poruka = MsgSend.Text.Trim();
+            if (poruka.StartsWith("IZNAJMI"))
+            {
+                var delovi = poruka.Split('-');
+                poslednjiNaslov = delovi[1];
+                poslednjiAutor = delovi[2];
+                poslednjiBroj = int.Parse(delovi[3]);
+            }
+
             if (!string.IsNullOrEmpty(poruka) && client.Connected)
             {
                 if (poruka.StartsWith("Proveri", StringComparison.OrdinalIgnoreCase))
@@ -80,6 +92,32 @@ namespace Server
                     if (bytesRead == 0) break;
 
                     string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+
+                    if (message == "IZNAJMLJENO")
+                    {
+                        mojaIznajmljivanja.Add(new MojeIznajmljivanje
+                        {
+                            Naslov = poslednjiNaslov,
+                            Autor = poslednjiAutor,
+                            BrojPrimeraka = poslednjiBroj
+                        });
+                    }
+                    else if (message == "VRACENO")
+                    {
+                        var izn = mojaIznajmljivanja.FirstOrDefault(i =>
+                            i.Naslov == poslednjiNaslov &&
+                            i.Autor == poslednjiAutor);
+
+                        if (izn != null)
+                        {
+                            izn.BrojPrimeraka -= poslednjiBroj;
+
+                            if (izn.BrojPrimeraka <= 0)
+                            {
+                                mojaIznajmljivanja.Remove(izn);
+                            }
+                        }
+                    }
 
                     ServerMsg.Dispatcher.Invoke(() =>
                     {
