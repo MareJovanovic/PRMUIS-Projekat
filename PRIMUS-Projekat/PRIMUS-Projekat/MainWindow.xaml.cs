@@ -227,6 +227,66 @@ namespace PRIMUS_Projekat
                             await stream.WriteAsync(err, 0, err.Length);
                         }
                     }
+                    else if (delovi[0] == "VRATI")
+                    {
+                        try
+                        {
+                            // delovi[0] = VRATI
+                            // delovi[1] = naslov
+                            // delovi[2] = autor
+                            // delovi[3] = broj
+                            // delovi[4] = clanId
+
+                            string naslov = delovi[1];
+                            string autor = delovi[2];
+                            int broj = int.Parse(delovi[3]);
+                            int clanId = int.Parse(delovi[4]);
+
+                            var izn = iznajmljivanja.FirstOrDefault(i =>
+                                i.Naslov == naslov &&
+                                i.Autor == autor &&
+                                i.ClanId == clanId);
+
+                            if (izn != null)
+                            {
+                                // smanjujemo broj iznajmljenih primeraka
+                                izn.BrojPrimeraka -= broj;
+
+                                // vracamo knjige u biblioteku
+                                var knjiga = knjige.First(k =>
+                                    k.Naslov == naslov && k.Autor == autor);
+
+                                knjiga.Kolicina += broj;
+
+                                // osvezavanje WPF prikaza
+                                Dispatcher.Invoke(() =>
+                                {
+                                    PrikazKnjiga.Items.Refresh();
+                                    BookLIst.Items.Refresh();
+                                });
+
+                                // ako vise nema iznajmljenih primeraka – brisemo evidenciju
+                                if (izn.BrojPrimeraka <= 0)
+                                {
+                                    iznajmljivanja.Remove(izn);
+                                }
+
+                                byte[] ok = Encoding.UTF8.GetBytes("VRACENO");
+                                await stream.WriteAsync(ok, 0, ok.Length);
+                            }
+                            else
+                            {
+                                byte[] err = Encoding.UTF8.GetBytes("NEMA_IZNAJMLJIVANJA");
+                                await stream.WriteAsync(err, 0, err.Length);
+                            }
+                        }
+                        catch
+                        {
+                            byte[] err = Encoding.UTF8.GetBytes("GRESKA_Z5");
+                            await stream.WriteAsync(err, 0, err.Length);
+                        }
+                    }
+
 
                     // Echo nazad klijentu
                     //byte[] response = Encoding.UTF8.GetBytes($"[Server]: {message}");
